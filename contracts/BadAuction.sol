@@ -6,6 +6,10 @@ import "./AuctionInterface.sol";
 contract BadAuction is AuctionInterface {
 
 
+	modifier larger {
+		require(msg.value > highestBid);
+		_;
+	}
 	/* Bid function, vulnerable to reentrency attack.
 	 * Must return true on successful send and/or bid,
 	 * bidder reassignment
@@ -14,6 +18,15 @@ contract BadAuction is AuctionInterface {
 	 */
 	function bid() payable external returns (bool) {
 		// YOUR CODE HERE
+		if (msg.value > highestBid) {
+			if (highestBidder.call.value(highestBid)()) {	
+				highestBid = msg.value;
+				highestBidder = msg.sender;
+				return true;
+			}
+			return false;
+		}
+		return false;
 	}
 
 
@@ -42,6 +55,7 @@ contract BadAuction is AuctionInterface {
 
 	function () payable {
 		// YOUR CODE HERE
+		msg.sender.transfer(msg.value);
 	}
 
 }
